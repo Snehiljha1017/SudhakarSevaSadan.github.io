@@ -4,7 +4,7 @@ const revealItems = document.querySelectorAll(".reveal");
 const bookingForm = document.querySelector("#appointment-form");
 const bookingMessage = document.querySelector("#booking-message");
 const preferredTimeSelect = document.querySelector("#preferred-time");
-const whatsappNumber = "918877479224";
+const whatsappNumbers = ["917011366767", "918210728218"];
 const clinicTimeSlots = [
   "09:00 AM",
   "09:30 AM",
@@ -70,6 +70,30 @@ if (preferredTimeSelect) {
   });
 }
 
+function buildWhatsappUrls(messageText) {
+  return whatsappNumbers.map((number) => `https://wa.me/${number}?text=${encodeURIComponent(messageText)}`);
+}
+
+function openWhatsappChats(messageText) {
+  buildWhatsappUrls(messageText).forEach((url) => {
+    window.open(url, "_blank", "noopener");
+  });
+}
+
+document.querySelectorAll("a.whatsapp").forEach((link) => {
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+
+    const linkUrl = new URL(link.href, window.location.href);
+    const fallbackMessage = "Hello Doctor, I want to book an appointment.";
+    const messageText = linkUrl.searchParams.get("text")
+      ? decodeURIComponent(linkUrl.searchParams.get("text"))
+      : fallbackMessage;
+
+    openWhatsappChats(messageText);
+  });
+});
+
 if (bookingForm && bookingMessage) {
   bookingForm.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -103,9 +127,8 @@ if (bookingForm && bookingMessage) {
       `Time: ${displayTime}`,
       `Reason: ${reason || "Not provided"}`
     ].join("\n");
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappText)}`;
 
-    bookingMessage.textContent = `Redirecting to WhatsApp for ${name}'s appointment request...`;
-    window.location.href = whatsappUrl;
+    bookingMessage.textContent = `Opening WhatsApp chats for ${name}'s appointment request...`;
+    openWhatsappChats(whatsappText);
   });
 }
